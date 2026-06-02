@@ -28,9 +28,9 @@ A complete **offline** Pashto keyboard that works without internet. Built with E
 
 ## 📸 انځور | Screenshot
 
-![پښتو کیبورډ سکرین شاټ](https://github.com/spinzar/pashto-keyboard-public/blob/main/assets/icons/Screenshot%20from%202026-06-02%2023-51-46.png)
+![پښتو کیبورډ سکرین شاټ]https://github.com/spinzar/pashto-keyboard-public/blob/main/assets/icons/Screenshot%20from%202026-06-02%2023-51-46.png
 
-> **یادونه:** مهرباني وکړئ د ریښتیني سکرین شاټ سره پورته تصویر بدل کړئ.
+
 
 ---
 
