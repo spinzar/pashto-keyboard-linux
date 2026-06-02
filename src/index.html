@@ -2,67 +2,116 @@
 <html lang="ps" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>پښتو کیبورډ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body { display: flex; flex-direction: column; align-items: center; padding: 10px; font-family: sans-serif; background: #f0f2f5; margin: 0; }
         .header { width: 100%; max-width: 850px; background: #2f4b46; color: white; padding: 15px; border-radius: 12px 12px 0 0; text-align: center; }
         .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
-        textarea { width: 100%; max-width: 850px; height: 120px; padding: 15px; font-size: 1.5rem; border: 2px solid #cbd5e1; border-radius: 0 0 12px 12px; box-sizing: border-box; }
+        textarea { width: 100%; max-width: 850px; height: 120px; padding: 15px; font-size: 1.5rem; border: 2px solid #cbd5e1; border-radius: 0 0 12px 12px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         .keyboard { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 850px; margin-top: 15px; }
         .row { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
-        .key { padding: 12px; min-width: 45px; background: #ffffff; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
+        .key { padding: 12px; min-width: 45px; background: #ffffff; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; font-size: 1.2rem; transition: 0.1s; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .key:active { transform: scale(0.96); background: #e2e8f0; }
         .key-action { background: #e0e7ff; font-weight: bold; }
         .key-space { min-width: 200px; background: #fef9c3; }
         .btn-tool { padding: 8px 12px; cursor: pointer; border-radius: 6px; border: none; background: #ffffff; color: #2f4b46; font-weight: bold; margin: 2px; }
+        .history-panel { width: 100%; max-width: 850px; background: white; border-radius: 12px; margin-top: 15px; padding: 10px; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .hist-item { padding: 10px; border-bottom: 1px solid #ddd; cursor: pointer; transition: 0.1s; font-size: 1rem; }
+        .hist-item:hover { background: #f1f5f9; }
+        .close-hist { float: left; background: #ef4444; color: white; border: none; border-radius: 20px; padding: 4px 12px; cursor: pointer; margin-bottom: 8px; }
+        .status-msg { position: fixed; bottom: 20px; left: 20px; background: #333; color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; opacity: 0; transition: 0.3s; }
     </style>
 </head>
 <body>
+
     <div class="header">
         <h2>⌨️ پښتو آفلاین کیبورډ</h2>
         <div class="toolbar">
             <button class="btn-tool" onclick="setActiveMode('normal')">عادي</button>
             <button class="btn-tool" onclick="setActiveMode('shift')">شفټ</button>
             <button class="btn-tool" onclick="setActiveMode('ctrlAlt')">کنټرول الټ</button>
-            <button class="btn-tool" style="background:#ef4444; color:white" onclick="clearAll()">پاکول</button>
-            <button class="btn-tool" style="background:#22c55e; color:white" onclick="copyText()">کاپي</button>
-            <button class="btn-tool" style="background:#f59e0b; color:white" onclick="pasteText()">پیسټ</button>
+            <button class="btn-tool" style="background:#ef4444; color:white" onclick="clearAll()">🧹 پاکول</button>
+            <button class="btn-tool" style="background:#22c55e; color:white" onclick="copyTextElectron()">📋 کاپي</button>
+            <button class="btn-tool" style="background:#f59e0b; color:white" onclick="pasteTextElectron()">📥 پیسټ</button>
+            <button class="btn-tool" style="background:#3b82f6; color:white" onclick="showHistory()">🕒 تاریخچه</button>
         </div>
     </div>
-    <textarea id="txt" placeholder="خپل متن دلته ولیکئ..."></textarea>
+    
+    <textarea id="txt" placeholder="خپل متن دلته ولیکئ... (کرسر هر ځای کېږدئ، کیبورډ به هلته اضافه کړي)" oninput="autoSave()"></textarea>
+
     <div id="kbd" class="keyboard"></div>
+    <div id="historyPanel" class="history-panel"></div>
+    <div id="statusMsg" class="status-msg"></div>
 
     <script>
+        // Electron IPC (که په Electron کې چلیږي)
         const { ipcRenderer } = require('electron');
+        
         const txt = document.getElementById('txt');
+        const kbd = document.getElementById('kbd');
+        const histPanel = document.getElementById('historyPanel');
+        const statusMsg = document.getElementById('statusMsg');
         
+        let currentMode = 'normal';
+
+        function showMessage(msg, isError = false) {
+            statusMsg.textContent = msg;
+            statusMsg.style.opacity = '1';
+            statusMsg.style.background = isError ? '#ef4444' : '#22c55e';
+            setTimeout(() => { statusMsg.style.opacity = '0'; }, 2000);
+        }
+
+        // د پښتو کیلي نقشه
         const sets = {
-            normal: [["=","-","۰","۹","۸","۷","۶","۵","۴","۳","۲","۱"],["\\","چ","ج","ح","خ","ه","ع","غ","ف","ق","ث","ص","ض"],["ګ","ک","م","ن","ت","ا","ل","ب","ی","س","ش"],["/","ږ","و","ړ","د","ذ","ر","ز","ې","ۍ"]],
-            shift: [["ـ","(",")","«","»","×","٪","؋","٫","٬","!"],["څ","ځ","ّ","َ","ِ","ُ","ً","ٍ","ٌ","ْ"],["؛",":","ة","ڼ","ټ","آ","أ","پ","ي","ئ","ښ"],["؟",".","،","ؤ","ډ","ء","ژ","ط","ظ"]],
-            ctrlAlt: [["_","•","&","^","%","$","#","@","`","~"],["|","{","}","\"","'","ٰ","ٙ","ٖ","﴿","﴾","€","ٓ","°"],["ۉ","ۇ",",","ڑ","ڈ","إ","ٔ","ٕ",";","?"]]
+            normal: [
+                ["=", "-", "۰", "۹", "۸", "۷", "۶", "۵", "۴", "۳", "۲", "۱"],
+                ["\\", "چ", "ج", "ح", "خ", "ه", "ع", "غ", "ف", "ق", "ث", "ص", "ض"],
+                ["ګ", "ک", "م", "ن", "ت", "ا", "ل", "ب", "ی", "س", "ش"],
+                ["/", "ږ", "و", "ړ", "د", "ذ", "ر", "ز", "ې", "ۍ"]
+            ],
+            shift: [
+                ["ـ", "(", ")", "«", "»", "×", "٪", "؋", "٫", "٬", "!"],
+                ["څ", "ځ", "ّ", "َ", "ِ", "ُ", "ً", "ٍ", "ٌ", "ْ"],
+                ["؛", ":", "ة", "ڼ", "ټ", "آ", "أ", "پ", "ي", "ئ", "ښ"],
+                ["؟", ".", "،", "ؤ", "ډ", "ء", "ژ", "ط", "ظ"]
+            ],
+            ctrlAlt: [
+                ["_", "•", "&", "^", "%", "$", "#", "@", "`", "~"],
+                ["|", "{", "}", "\"", "'", "ٰ", "ٙ", "ٖ", "﴿", "﴾", "€", "ٓ", "°"],
+                ["ۉ", "ۇ", ",", "ڑ", "ڈ", "إ", "ٔ", "ٕ", ";", "?"]
+            ]
         };
-        
+
         function insertAtCursor(text) {
             const start = txt.selectionStart;
             const end = txt.selectionEnd;
-            txt.value = txt.value.substring(0, start) + text + txt.value.substring(end);
+            const newValue = txt.value.substring(0, start) + text + txt.value.substring(end);
+            txt.value = newValue;
             txt.selectionStart = txt.selectionEnd = start + text.length;
             txt.focus();
+            autoSave();
         }
-        
+
         function render(mode) {
-            const kbd = document.getElementById('kbd');
             kbd.innerHTML = '';
-            sets[mode].forEach(rowArray => {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'row';
-                rowArray.forEach(char => {
-                    const btn = document.createElement('button');
-                    btn.className = 'key';
-                    btn.innerText = char;
-                    btn.onclick = () => insertAtCursor(char);
-                    rowDiv.appendChild(btn);
-                });
-                kbd.appendChild(rowDiv);
+            const layout = sets[mode];
+            if (!layout) return;
+            
+            layout.forEach(rowArray => {
+                if (rowArray && rowArray.length) {
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = 'row';
+                    rowArray.forEach(char => {
+                        if (char) {
+                            const btn = document.createElement('button');
+                            btn.className = 'key';
+                            btn.innerText = char;
+                            btn.onclick = () => insertAtCursor(char);
+                            rowDiv.appendChild(btn);
+                        }
+                    });
+                    kbd.appendChild(rowDiv);
+                }
             });
             
             const ctrlRow = document.createElement('div');
@@ -74,7 +123,8 @@
             backBtn.onclick = () => {
                 if (txt.selectionStart === txt.selectionEnd && txt.selectionStart > 0) {
                     const pos = txt.selectionStart;
-                    txt.value = txt.value.substring(0, pos-1) + txt.value.substring(pos);
+                    const newVal = txt.value.substring(0, pos-1) + txt.value.substring(pos);
+                    txt.value = newVal;
                     txt.selectionStart = txt.selectionEnd = pos-1;
                 } else if (txt.selectionStart !== txt.selectionEnd) {
                     const start = txt.selectionStart;
@@ -83,11 +133,12 @@
                     txt.selectionStart = txt.selectionEnd = start;
                 }
                 txt.focus();
+                autoSave();
             };
             
             const spaceBtn = document.createElement('button');
             spaceBtn.className = 'key key-space';
-            spaceBtn.innerText = 'فاصله';
+            spaceBtn.innerText = 'ـــــ فاصله ـــــ';
             spaceBtn.onclick = () => insertAtCursor(' ');
             
             const enterBtn = document.createElement('button');
@@ -100,28 +151,99 @@
             ctrlRow.appendChild(enterBtn);
             kbd.appendChild(ctrlRow);
         }
-        
+
         function setActiveMode(mode) {
+            currentMode = mode;
             render(mode);
             txt.focus();
         }
-        
-        function clearAll() {
-            txt.value = '';
+
+        function autoSave() {
+            if (txt.value.trim() === "") return;
+            let sessions = JSON.parse(localStorage.getItem('ps_mem') || '[]');
+            if (sessions[0] === txt.value) return;
+            sessions.unshift(txt.value.substring(0, 5000));
+            if (sessions.length > 3) sessions.pop();
+            localStorage.setItem('ps_mem', JSON.stringify(sessions));
+        }
+
+        function clearAll() { 
+            txt.value = ''; 
             txt.focus();
+            autoSave();
+            showMessage('ټول متن پاک شو');
         }
         
-        function copyText() {
-            ipcRenderer.send('copy-text', txt.value);
-            alert('✅ کاپي شو!');
+        // د Electron IPC له لارې کاپي
+        function copyTextElectron() {
+            const text = txt.value;
+            if (!text) {
+                showMessage('هیڅ متن نشته چې کاپي شي', true);
+                return;
+            }
+            ipcRenderer.send('copy-text', text);
+            showMessage('✅ متن کاپي شو!');
         }
         
-        async function pasteText() {
-            const text = await ipcRenderer.invoke('paste-text');
-            if (text) insertAtCursor(text);
+        // د Electron IPC له لارې پیسټ
+        async function pasteTextElectron() {
+            try {
+                const text = await ipcRenderer.invoke('paste-text');
+                if (text) {
+                    insertAtCursor(text);
+                    showMessage('✅ متن پیسټ شو');
+                } else {
+                    showMessage('کلېپ بورډ خالي دی', true);
+                }
+            } catch (err) {
+                showMessage('❌ پیسټ ناکام شو: ' + err.message, true);
+            }
         }
+
+        function showHistory() {
+            let sessions = JSON.parse(localStorage.getItem('ps_mem') || '[]');
+            if (sessions.length === 0) { 
+                showMessage('تاریخچه خالي ده', true);
+                return; 
+            }
+            
+            histPanel.innerHTML = '';
+            const closeBtn = document.createElement('button');
+            closeBtn.innerText = '✖ تړل';
+            closeBtn.className = 'close-hist';
+            closeBtn.onclick = () => { histPanel.style.display = 'none'; };
+            histPanel.appendChild(closeBtn);
+            
+            const title = document.createElement('div');
+            title.innerText = '📜 پخواني متنونه (په کارډ کلیک وکړئ راولي)';
+            title.style.fontWeight = 'bold';
+            title.style.marginBottom = '10px';
+            histPanel.appendChild(title);
+            
+            sessions.forEach((s, i) => {
+                let div = document.createElement('div');
+                div.className = 'hist-item';
+                div.innerText = `${i+1}: ${s.substring(0, 60)}${s.length > 60 ? '...' : ''}`;
+                div.onclick = () => {
+                    txt.value = s;
+                    txt.focus();
+                    histPanel.style.display = 'none';
+                    autoSave();
+                    showMessage('متن له تاریخچې څخه راوړل شو');
+                };
+                histPanel.appendChild(div);
+            });
+            histPanel.style.display = 'block';
+        }
+
+        txt.addEventListener('click', () => txt.focus());
         
-        render('normal');
+        // د کړکۍ د ښکاره کیدو په وخت کې فوکس
+        ipcRenderer.on('window-shown', () => {
+            txt.focus();
+        });
+        
+        setActiveMode('normal');
     </script>
 </body>
 </html>
