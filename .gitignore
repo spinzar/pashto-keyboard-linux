@@ -1,5 +1,71 @@
+# د Node.js او Electron فایلونه
 node_modules/
-dist/
-.DS_Store
-*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 package-lock.json
+yarn.lock
+
+# د جوړونې فایلونه
+dist/
+out/
+release-builds/
+
+# د سیسټم فایلونه
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# د ایډیټر فایلونه
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# د Electron فایلونه
+electron-builder.env
+
+# د لاګ فایلونه
+*.log
+logs/
+*.pid
+*.seed
+
+# د کېش فایلونه
+.cache/
+.tmp/
+temp/
+
+# د ازمېښت فایلونه
+coverage/
+.nyc_output/
+
+# د سناپشاټ فایلونه
+.snap/
+
+# د محیط متغیرونه
+.env
+.env.local
+.env.*.local
+
+# د آیکون لنډیزونه
+*.AppImage
+*.deb
+*.rpm
+*.snap
+*.dmg
+*.exe
+*.msi
+*.zip
+*.tar.gz
+
+# د کارن ډاټا (مګر په ریپازیتوري کې نه)
+user-data/
+
+# د OS خاص فایلونه
+*.orig
+*.rej
+*.bak
