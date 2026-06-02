@@ -1,3 +1,4 @@
+
 ---
 
 # 🖥️ پښتو آفلاین کیبورډ | Pashto Offline Keyboard
@@ -26,73 +27,19 @@ A complete **offline** Pashto keyboard that works without internet. Built with E
 
 ---
 
-## 📦 نصبول | Installation
+## 📦 نصبول او چلول | Installation & Setup
 
-### لار ۱: د `.deb` پیکج څخه (توصیه شوی)
-
-1. د وروستي ریلیز څخه `.deb` فایل ډاونلوډ کړئ:
-
-```bash
-wget https://github.com/spinzar/pashto-keyboard-public/releases/download/v1.0.0/pashto-keyboard_1.0.0_amd64.deb
-
-```
-
-2. پیکج نصب کړئ:
-
-```bash
-sudo dpkg -i pashto-keyboard_1.0.0_amd64.deb
-
-```
-
-3. که کومه تړلې ستونزه وي، حل یې کړئ:
-
-```bash
-sudo apt-get install -f
-
-```
-
-### لار ۲: د AppImage څخه (پورټبل)
-
-1. د AppImage فایل ډاونلوډ کړئ:
-
-```bash
-wget https://github.com/spinzar/pashto-keyboard-public/releases/download/v1.0.0/PashtoKeyboard-1.0.0.AppImage
-
-```
-
-2. د اجرا کولو اجازه ورکړئ:
-
-```bash
-chmod +x PashtoKeyboard-1.0.0.AppImage
-
-```
-
-3. چلول:
-
-```bash
-./PashtoKeyboard-1.0.0.AppImage --no-sandbox
-
-```
-
-### لار ۳: د سرچینې څخه جوړول
-
-که تاسو غواړئ پخپله جوړه کړئ:
+دا پروژه لا تر اوسه په رسمي ډول ریلیز شوې نه ده. د چلولو لپاره لومړی پروژه پخپل کمپیوټر کې کلوون (Clone) کړئ:
 
 ```bash
 git clone https://github.com/spinzar/pashto-keyboard-public.git
 cd pashto-keyboard-public
-npm install
-npm run dist:deb      # د .deb پیکج لپاره
-# یا
-npm run dist:appimage # د AppImage پیکج لپاره
 
 ```
 
-جوړ شوی پیکج به د `dist/` فولډر کې وي.
+### لار ۱: د اتوماتیک سکریپټ څخه کارول (تر ټولو اسانه)
 
-### لار ۴: د اتوماتیک سکریپټ څخه کارول (rebuild.sh)
-
-په پروژه کې یو اتوماتیک سکریپټ (`rebuild.sh`) شامل دی چې ټول اړین ګامونه پخپله ترسره کوي او اپلیکیشن پیلوي. دا د چټکې ازموینې لپاره ډیر ګټور دی.
+په پروژه کې یو اتوماتیک سکریپټ (`rebuild.sh`) شامل دی چې ټول اړین ګامونه پخپله ترسره کوي، انحصارونه انسټالوي، اپلیکیشن جوړوي او بیا یې پیلوي:
 
 1. د سکریپټ د اجرا کولو اجازه ورکړئ:
 
@@ -108,7 +55,32 @@ chmod +x rebuild.sh
 
 ```
 
-> ⚠️ **یادونه:** دا سکریپټ به `node_modules` او `dist` پاک کړي، ټول انحصارونه نصب کړي، یوازې **AppImage** جوړه کړي او بیا به یې پیل کړي.
+### لار ۲: د سرچینې څخه د پیکجونو جوړول (Manual)
+
+که تاسو غواړئ کڅوړې په لاسي ډول د پرانیستلو یا انسټال لپاره چمتو کړئ:
+
+1. ټول اړین پیکجونه انسټال کړئ:
+
+```bash
+npm install
+
+```
+
+2. د خپلې خوښې پیکج جوړ کړئ:
+
+```bash
+# د اوبنټو لپاره د .deb پیکج جوړول
+npm run dist:deb
+
+# د پورټبل AppImage پیکج جوړول
+npm run dist:appimage
+
+# دواړه پیکجونه یوځای جوړول
+npm run dist
+
+```
+
+جوړ شوي پیکجونه به ستاسو د پروژې په `dist/` فولډر کې ځای پر ځای شي، چې بیا یې په اسانۍ انسټالولی شئ.
 
 ---
 
@@ -116,8 +88,8 @@ chmod +x rebuild.sh
 
 ### 1. اپلیکیشن خلاصول
 
-* د اپلیکیشن مینو څخه "PashtoKeyboard" لټون وکړئ.
-* یا په ټرمینل کې `pashto-keyboard` ټایپ کړئ.
+* که مو له سکریپټ څخه کار اخیستی وي، اپلیکیشن به اتومات خلاص شي.
+* په عادي حالت کې د پروژې په فولډر کې `npm start` ووهئ.
 * د شارټ کټ لپاره **`Alt + Shift + P`** فشار کړئ (اپلیکیشن به ښکاره او پټ شي).
 
 ### 2. متن لیکل
@@ -144,15 +116,7 @@ chmod +x rebuild.sh
 
 ---
 
-## 🛠️ د پراختیا لپاره | Development
-
-### اړتیاوې | Prerequisites
-
-* Node.js (v20 یا ورته)
-* npm (v10 یا ورته)
-* د Electron جوړولو لپاره اړین پکيجونه
-
-### د پروژې جوړښت | Project Structure
+## 🛠️ د پروژې جوړښت | Project Structure
 
 ```
 pashto-keyboard-public/
@@ -166,23 +130,6 @@ pashto-keyboard-public/
 ├── package.json            # پروژه ترتیبات او انحصارونه
 ├── LICENSE                 # Apache 2.0 لایسنس
 └── README.md               # دا فایل
-
-```
-
-### د پراختیا کمانډونه | Development Commands
-
-```bash
-# د پراختیا په حالت کې چلول
-npm start
-
-# یوازې د .deb پیکج جوړول
-npm run dist:deb
-
-# یوازې د AppImage پیکج جوړول
-npm run dist:appimage
-
-# دواړه (deb او AppImage) جوړول
-npm run dist
 
 ```
 
@@ -233,6 +180,6 @@ npm run dist
 
 ### ❤️ ملاتړ
 
-که دا پروژه تاسو سره مرسته وکړه، مهرباني وکړئ د **⭐ ستوري (Star)** په ورکولو سره یې ملاتړ وکړئ.
+که دا پروژه تاسو سره مهرباني وکړه، مهرباني وکړئ د **⭐ ستوري (Star)** په ورکولو سره یې ملاتړ وکړئ.
 
 **پښتو ژبه وساتئ | Keep Pashto Language Alive** 🎯
